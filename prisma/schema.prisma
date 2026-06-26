@@ -1,0 +1,274 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  name                String?
+  passwordHash        String
+  emailVerified       Boolean   @default(false)
+  emailVerifyToken    String?
+  emailVerifyExpires  DateTime?
+  avatarUrl           String?
+
+  plan             Plan         @default(STARTER)
+  billingCycle     BillingCycle @default(MONTHLY)
+  stripeCustomerId String?      @unique
+  stripeSubId      String?      @unique
+  planExpiresAt    DateTime?
+
+  smtpHost          String?
+  smtpPort          Int?
+  smtpUser          String?
+  smtpPassEncrypted String?
+  smtpFrom          String?
+
+  emailsSentToday   Int      @default(0)
+  emailsSentMonth   Int      @default(0)
+  leadsScrapedMonth Int      @default(0)
+  quotaResetAt      DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  leads          Lead[]
+  campaigns      Campaign[]
+  pipelineStages PipelineStage[]
+  refreshTokens  RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+model Lead {
+  id             String  @id @default(cuid())
+  userId         String
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName      String?
+  lastName       String?
+  email          String?
+  emailVerified  Boolean @default(false)
+  phone          String?
+  linkedinUrl    String?
+  company        String?
+  companyWebsite String?
+  industry       String?
+  companySize    String?
+  revenue        String?
+  address        String?
+  city           String?
+  country        String?
+  aiSummary      String? @db.Text
+  aiPainPoints   String[]
+  aiRecentNews   String? @db.Text
+  aiTone         String?
+  aiAttackAngle  String? @db.Text
+  qualityScore   Int     @default(0)
+  icpScore       Int?
+
+  status          LeadStatus     @default(NEW)
+  pipelineStageId String?
+  pipelineStage   PipelineStage? @relation(fields: [pipelineStageId], references: [id])
+
+  source         LeadSource @default(MANUAL)
+  tags           String[]
+  notes          String?    @db.Text
+  isUnsubscribed Boolean    @default(false)
+  isBounced      Boolean    @default(false)
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  emailLogs     EmailLog[]
+  campaignLeads CampaignLead[]
+
+  @@index([userId])
+  @@index([email])
+  @@map("leads")
+}
+
+model Campaign {
+  id               String         @id @default(cuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  description      String?
+  status           CampaignStatus @default(DRAFT)
+  emailsPerDay     Int            @default(10)
+  sendingDays      String[]       @default(["MON", "TUE", "WED", "THU", "FRI"])
+  sendingTimeStart String         @default("09:00")
+  sendingTimeEnd   String         @default("18:00")
+  timezone         String         @default("Europe/Paris")
+  warmupEnabled    Boolean        @default(true)
+  warmupStartedAt  DateTime?
+  warmupCompletedAt DateTime?
+  totalLeads       Int            @default(0)
+  emailsSent       Int            @default(0)
+  emailsOpened     Int            @default(0)
+  emailsClicked    Int            @default(0)
+  emailsReplied    Int            @default(0)
+  emailsBounced    Int            @default(0)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  lastSentAt       DateTime?
+
+  emailTemplates EmailTemplate[]
+  campaignLeads  CampaignLead[]
+  emailLogs      EmailLog[]
+
+  @@index([userId])
+  @@map("campaigns")
+}
+
+model CampaignLead {
+  id          String   @id @default(cuid())
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  leadId      String
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  currentStep Int      @default(0)
+  isCompleted Boolean  @default(false)
+  isPaused    Boolean  @default(false)
+  nextSendAt  DateTime?
+  addedAt     DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([campaignId, leadId])
+  @@map("campaign_leads")
+}
+
+model EmailTemplate {
+  id         String    @id @default(cuid())
+  campaignId String
+  campaign   Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  position   Int
+  subject    String
+  body       String    @db.Text
+  delayDays  Int       @default(0)
+  tone       EmailTone @default(DIRECT)
+  isVariantB Boolean   @default(false)
+  variantAId String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  emailLogs  EmailLog[]
+
+  @@map("email_templates")
+}
+
+model EmailLog {
+  id              String    @id @default(cuid())
+  leadId          String
+  lead            Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  campaignId      String
+  campaign        Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  templateId      String
+  template        EmailTemplate @relation(fields: [templateId], references: [id])
+  subject         String
+  body            String    @db.Text
+  sentAt          DateTime  @default(now())
+  openedAt        DateTime?
+  clickedAt       DateTime?
+  repliedAt       DateTime?
+  bouncedAt       DateTime?
+  unsubscribedAt  DateTime?
+  replyContent    String?   @db.Text
+  replySentiment  ReplySentiment?
+  replyIntent     ReplyIntent?
+  replySuggestion String?   @db.Text
+  trackingPixelId String    @unique @default(cuid())
+  messageId       String?
+
+  @@index([leadId])
+  @@index([campaignId])
+  @@map("email_logs")
+}
+
+model PipelineStage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  position  Int
+  color     String   @default("#627d98")
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  leads     Lead[]
+
+  @@index([userId])
+  @@map("pipeline_stages")
+}
+
+enum Plan {
+  STARTER
+  PRO
+  UNLIMITED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  FOLLOWED_UP
+  REPLIED
+  QUALIFIED
+  CONVERTED
+  LOST
+}
+
+enum LeadSource {
+  SCRAPING
+  MANUAL
+  IMPORT
+  API
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum EmailTone {
+  CURIOUS
+  DIRECT
+  EXPERT
+  CONFIDENT
+  FRIENDLY
+}
+
+enum ReplySentiment {
+  POSITIVE
+  NEUTRAL
+  NEGATIVE
+  OFF_TOPIC
+}
+
+enum ReplyIntent {
+  INTERESTED
+  NEEDS_INFO
+  SOFT_DECLINE
+  HARD_DECLINE
+  OUT_OF_OFFICE
+}
