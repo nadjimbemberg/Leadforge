@@ -2,21 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-
-function Logo() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-      <rect width="32" height="32" rx="8" fill="#0F1A2E" />
-      <rect x="7" y="22" width="18" height="3" rx="1.5" fill="#2563EB" />
-      <rect x="10" y="19" width="12" height="3" rx="1" fill="#3B82F6" />
-      <rect x="6" y="9" width="12" height="6" rx="2" fill="#60A5FA" />
-      <rect x="16" y="11" width="10" height="2.5" rx="1.25" fill="#93C5FD" />
-      <circle cx="10" cy="8" r="1.2" fill="#DBEAFE" opacity="0.9" />
-      <circle cx="13" cy="6" r="0.8" fill="#DBEAFE" opacity="0.6" />
-    </svg>
-  )
-}
+import { Banner } from '@/components/ui/banner'
+import { cn } from '@/lib/utils'
 
 const PLANS = [
   {
@@ -59,115 +46,128 @@ export default function OnboardingPage() {
     }
   }
 
-  const card = { background: '#0B1628', border: '1px solid rgba(96,165,250,0.12)', borderRadius: 16, padding: 36, width: '100%', maxWidth: 540 }
-
   return (
-    <main style={{ backgroundColor: '#060D1A', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 16px', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-      <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', marginBottom: 40 }}>
-        <Logo />
-        <span style={{ fontWeight: 700, fontSize: 18, color: '#F0F4FF' }}>Lead<span style={{ color: '#60A5FA' }}>Forge</span></span>
-      </Link>
-
+    <>
       {/* Stepper */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32 }}>
-        {['Compte créé', 'Choisir un plan', 'Paiement'].map((label, i) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 12, fontWeight: 700,
-              background: i === 0 || (i === 1 && step === 'billing') ? '#2563EB' : i === 1 && step === 'plan' ? '#1D4ED8' : 'rgba(37,99,235,0.15)',
-              color: i === 0 || i === 1 ? '#fff' : '#2563EB',
-              border: '1px solid rgba(37,99,235,0.3)',
-            }}>
-              {i === 0 || (i === 1 && step === 'billing') ? '✓' : i + 1}
+      <div className="mb-8 flex items-center gap-2">
+        {['Compte créé', 'Choisir un plan', 'Paiement'].map((label, i) => {
+          const done = i === 0 || (i === 1 && step === 'billing')
+          return (
+            <div key={label} className="flex items-center gap-2">
+              <div
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-primary/30 text-[12px] font-medium"
+                style={{
+                  background: done ? '#BC5B39' : i === 1 ? '#BC5B39' : 'transparent',
+                  color: done || i === 1 ? '#FBF3EC' : '#BC5B39',
+                }}
+              >
+                {done ? '✓' : i + 1}
+              </div>
+              <span className="text-[12px] font-medium" style={{ color: i === 0 ? '#BC5B39' : '#8C8375' }}>{label}</span>
+              {i < 2 && <div className="h-px w-8 bg-border" />}
             </div>
-            <span style={{ fontSize: 12, color: i === 0 ? '#60A5FA' : '#334155', fontWeight: 500 }}>{label}</span>
-            {i < 2 && <div style={{ width: 32, height: 1, background: 'rgba(37,99,235,0.2)' }} />}
-          </div>
-        ))}
+          )
+        })}
       </div>
 
-      <div style={card}>
+      <div className="w-full max-w-[540px] rounded-lg border border-border bg-paper p-9">
         {step === 'plan' ? (
           <>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#F0F4FF', marginBottom: 6 }}>Choisissez votre plan</h1>
-            <p style={{ fontSize: 14, color: '#64748B', marginBottom: 28 }}>14 jours gratuits · Annulation à tout moment</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
-              {PLANS.map(p => (
-                <div key={p.id} onClick={() => setPlan(p.id)} style={{
-                  border: `2px solid ${plan === p.id ? '#2563EB' : 'rgba(96,165,250,0.1)'}`,
-                  borderRadius: 12, padding: 20, cursor: 'pointer', position: 'relative',
-                  background: plan === p.id ? 'rgba(37,99,235,0.08)' : 'transparent',
-                }}>
-                  {p.recommended && (
-                    <div style={{ position: 'absolute', top: -10, right: 16, background: '#2563EB', color: '#fff', fontSize: 11, fontWeight: 700, padding: '2px 10px', borderRadius: 99 }}>Recommandé</div>
-                  )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                    <div>
-                      <p style={{ fontSize: 15, fontWeight: 700, color: '#F0F4FF', margin: '0 0 3px' }}>{p.name}</p>
-                      <p style={{ fontSize: 12, color: '#475569', margin: 0 }}>À partir de <span style={{ color: '#60A5FA', fontWeight: 700 }}>{p.yearlyPrice}/mois</span></p>
+            <h1 className="mb-1.5 font-serif text-[26px] font-medium text-foreground">Choisissez votre plan</h1>
+            <p className="mb-7 text-[14px] text-muted-foreground">14 jours gratuits · Annulation à tout moment</p>
+            <div className="mb-6 flex flex-col gap-3">
+              {PLANS.map(p => {
+                const isSelected = plan === p.id
+                return (
+                  <div
+                    key={p.id}
+                    onClick={() => setPlan(p.id)}
+                    className={cn(
+                      'relative cursor-pointer rounded-md border p-5 transition-colors',
+                      isSelected ? 'border-primary bg-primary/[0.05]' : 'border-border'
+                    )}
+                  >
+                    {p.recommended && (
+                      <div className="absolute -top-2.5 right-4 rounded-full bg-foreground px-2.5 py-0.5 text-[11px] font-medium text-background">Recommandé</div>
+                    )}
+                    <div className="mb-2.5 flex items-center justify-between">
+                      <div>
+                        <p className="mb-0.5 text-[15px] font-medium text-foreground">{p.name}</p>
+                        <p className="text-[12px] text-muted-foreground">À partir de <span className="font-medium text-primary">{p.yearlyPrice}/mois</span></p>
+                      </div>
+                      <div
+                        className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2"
+                        style={{ borderColor: isSelected ? '#BC5B39' : '#E4DCCC', background: isSelected ? '#BC5B39' : 'transparent' }}
+                      >
+                        {isSelected && <div className="h-2 w-2 rounded-full bg-paper" />}
+                      </div>
                     </div>
-                    <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${plan === p.id ? '#2563EB' : 'rgba(96,165,250,0.3)'}`, background: plan === p.id ? '#2563EB' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {plan === p.id && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}
+                    <div className="flex flex-wrap gap-x-3.5 gap-y-1">
+                      {p.features.map(f => (
+                        <span key={f} className="text-[12px] text-muted-foreground">· {f}</span>
+                      ))}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px 14px' }}>
-                    {p.features.map(f => (
-                      <span key={f} style={{ fontSize: 12, color: '#64748B' }}>✓ {f}</span>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={() => router.push('/dashboard')} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(96,165,250,0.15)', borderRadius: 10, padding: '11px 0', color: '#475569', fontSize: 14, cursor: 'pointer' }}>
+            <div className="flex gap-2.5">
+              <button onClick={() => router.push('/dashboard')} className="flex-1 rounded-md border border-border py-2.5 text-[14px] text-subtle">
                 Continuer gratuitement
               </button>
-              <button onClick={() => setStep('billing')} style={{ flex: 2, background: '#2563EB', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+              <button onClick={() => setStep('billing')} className="flex-[2] rounded-md bg-foreground py-2.5 text-[14px] font-medium text-background">
                 Continuer avec {selectedPlan.name} →
               </button>
             </div>
           </>
         ) : (
           <>
-            <button onClick={() => setStep('plan')} style={{ background: 'none', border: 'none', color: '#60A5FA', fontSize: 13, cursor: 'pointer', padding: 0, marginBottom: 20 }}>← Retour</button>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#F0F4FF', marginBottom: 6 }}>Facturation</h1>
-            <p style={{ fontSize: 14, color: '#64748B', marginBottom: 28 }}>Plan : <span style={{ color: '#60A5FA', fontWeight: 600 }}>{selectedPlan.name}</span></p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
+            <button onClick={() => setStep('plan')} className="mb-5 text-[13px] text-primary">← Retour</button>
+            <h1 className="mb-1.5 font-serif text-[26px] font-medium text-foreground">Facturation</h1>
+            <p className="mb-7 text-[14px] text-muted-foreground">Plan : <span className="font-medium text-primary">{selectedPlan.name}</span></p>
+            <div className="mb-7 flex flex-col gap-3">
               {[
                 { id: 'YEARLY', label: 'Annuel', badge: 'Économisez 50%', price: selectedPlan.yearlyPrice + '/mois', sub: 'Facturé annuellement' },
                 { id: 'MONTHLY', label: 'Mensuel', badge: null, price: selectedPlan.monthlyPrice + '/mois', sub: 'Facturé chaque mois' },
-              ].map(opt => (
-                <div key={opt.id} onClick={() => setCycle(opt.id as 'MONTHLY' | 'YEARLY')} style={{
-                  border: `2px solid ${cycle === opt.id ? '#2563EB' : 'rgba(96,165,250,0.1)'}`,
-                  borderRadius: 12, padding: '16px 20px', cursor: 'pointer',
-                  background: cycle === opt.id ? 'rgba(37,99,235,0.08)' : 'transparent',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${cycle === opt.id ? '#2563EB' : 'rgba(96,165,250,0.3)'}`, background: cycle === opt.id ? '#2563EB' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {cycle === opt.id && <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#fff' }} />}
-                    </div>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: '#F0F4FF' }}>{opt.label}</span>
-                        {opt.badge && <span style={{ fontSize: 11, fontWeight: 700, color: '#34D399', background: 'rgba(52,211,153,0.1)', padding: '2px 8px', borderRadius: 99 }}>{opt.badge}</span>}
+              ].map(opt => {
+                const isSelected = cycle === opt.id
+                return (
+                  <div
+                    key={opt.id}
+                    onClick={() => setCycle(opt.id as 'MONTHLY' | 'YEARLY')}
+                    className={cn(
+                      'flex cursor-pointer items-center justify-between rounded-md border px-5 py-4 transition-colors',
+                      isSelected ? 'border-primary bg-primary/[0.05]' : 'border-border'
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2"
+                        style={{ borderColor: isSelected ? '#BC5B39' : '#E4DCCC', background: isSelected ? '#BC5B39' : 'transparent' }}
+                      >
+                        {isSelected && <div className="h-2 w-2 rounded-full bg-paper" />}
                       </div>
-                      <span style={{ fontSize: 12, color: '#475569' }}>{opt.sub}</span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[14px] font-medium text-foreground">{opt.label}</span>
+                          {opt.badge && <span className="rounded-full bg-secondary/10 px-2 py-0.5 text-[11px] font-medium text-secondary">{opt.badge}</span>}
+                        </div>
+                        <span className="text-[12px] text-muted-foreground">{opt.sub}</span>
+                      </div>
                     </div>
+                    <span className="text-[16px] font-medium" style={{ color: isSelected ? '#BC5B39' : '#8C8375' }}>{opt.price}</span>
                   </div>
-                  <span style={{ fontSize: 16, fontWeight: 800, color: cycle === opt.id ? '#60A5FA' : '#475569' }}>{opt.price}</span>
-                </div>
-              ))}
+                )
+              })}
             </div>
-            {error && <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#FCA5A5', marginBottom: 16 }}>{error}</div>}
-            <button onClick={handleCheckout} disabled={loading} style={{ width: '100%', background: '#2563EB', border: 'none', borderRadius: 10, padding: '13px 0', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.8 : 1 }}>
+            {error && <Banner variant="error" className="mb-4">{error}</Banner>}
+            <button onClick={handleCheckout} disabled={loading} className="w-full rounded-md bg-foreground py-3 text-[14.5px] font-medium text-background disabled:cursor-not-allowed disabled:opacity-70">
               {loading ? 'Redirection...' : 'Procéder au paiement →'}
             </button>
-            <p style={{ fontSize: 12, color: '#334155', textAlign: 'center', marginTop: 12 }}>Paiement sécurisé par Stripe · Annulation à tout moment</p>
+            <p className="mt-3 text-center text-[12px] text-muted-foreground">Paiement sécurisé par Stripe · Annulation à tout moment</p>
           </>
         )}
       </div>
-    </main>
+    </>
   )
 }

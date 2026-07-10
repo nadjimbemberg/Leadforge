@@ -1,5 +1,40 @@
 @import "tailwindcss";
 
+@theme inline {
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), Georgia, serif;
+
+  --color-background: #f8f4ec;
+  --color-foreground: #211d18;
+
+  --color-card: #fbf8f2;
+  --color-card-foreground: #211d18;
+
+  --color-paper: #ffffff;
+
+  --color-primary: #bc5b39;
+  --color-primary-foreground: #fbf3ec;
+
+  --color-secondary: #3f5a44;
+  --color-secondary-foreground: #f2f5f0;
+
+  --color-muted: #efe8db;
+  --color-muted-foreground: #8c8375;
+
+  --color-subtle: #5b5347;
+
+  --color-border: #e4dccc;
+  --color-input: #e4dccc;
+  --color-ring: #bc5b39;
+
+  --color-destructive: #a3402c;
+  --color-destructive-foreground: #fbf3ec;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -11,8 +46,8 @@ html {
 }
 
 body {
-  background-color: #080C14;
-  color: #F0F4FF;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -27,18 +62,21 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(100, 116, 139, 0.25);
+  background-color: rgba(140, 131, 117, 0.3);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(100, 116, 139, 0.45);
+  background-color: rgba(140, 131, 117, 0.5);
 }
 
 a {
   color: inherit;
 }
 
-input, button, textarea, select {
+input,
+button,
+textarea,
+select {
   font-family: inherit;
 }

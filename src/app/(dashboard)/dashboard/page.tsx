@@ -1,52 +1,10 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useState, useEffect, Suspense } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-
-function Sidebar({ active }: { active: string }) {
-  const router = useRouter()
-  const NAV = [
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Scraper', href: '/scraper' },
-    { label: 'Campagnes', href: '/campaigns' },
-    { label: 'Pipeline', href: '/pipeline' },
-    { label: 'Paramètres', href: '/settings' },
-  ]
-  async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/login')
-  }
-  return (
-    <aside style={{ width: 215, background: '#0B1628', borderRight: '1px solid rgba(96,165,250,0.08)', display: 'flex', flexDirection: 'column', padding: '20px 0', flexShrink: 0 }}>
-      <div style={{ padding: '0 16px 20px', borderBottom: '1px solid rgba(96,165,250,0.08)' }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="#0F1A2E" />
-            <rect x="7" y="22" width="18" height="3" rx="1.5" fill="#2563EB" />
-            <rect x="10" y="19" width="12" height="3" rx="1" fill="#3B82F6" />
-            <rect x="6" y="9" width="12" height="6" rx="2" fill="#60A5FA" />
-            <rect x="16" y="11" width="10" height="2.5" rx="1.25" fill="#93C5FD" />
-          </svg>
-          <span style={{ fontWeight: 700, fontSize: 15, color: '#F0F4FF' }}>Lead<span style={{ color: '#60A5FA' }}>Forge</span></span>
-        </a>
-      </div>
-      <nav style={{ flex: 1, padding: '14px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {NAV.map(item => (
-          <a key={item.href} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 8, fontSize: 13.5, fontWeight: 500, textDecoration: 'none', color: active === item.href ? '#fff' : '#60A5FA', background: active === item.href ? 'rgba(37,99,235,0.18)' : 'transparent' }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: active === item.href ? '#3B82F6' : '#1D4ED8', flexShrink: 0 }} />
-            {item.label}
-          </a>
-        ))}
-      </nav>
-      <div style={{ padding: '14px 10px', borderTop: '1px solid rgba(96,165,250,0.08)' }}>
-        <button onClick={logout} style={{ width: '100%', background: 'transparent', border: '1px solid rgba(96,165,250,0.1)', borderRadius: 8, padding: '9px 12px', color: '#475569', fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>
-          Déconnexion
-        </button>
-      </div>
-    </aside>
-  )
-}
+import { Banner } from '@/components/ui/banner'
+import { cn } from '@/lib/utils'
 
 function DashboardContent() {
   useAuth()
@@ -63,68 +21,68 @@ function DashboardContent() {
   }, [])
 
   const KPIS = [
-    { label: 'Leads total', value: '0', color: '#3B82F6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.18)' },
-    { label: 'Emails envoyés', value: '0', color: '#60A5FA', bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.18)' },
-    { label: "Taux d'ouverture", value: '0%', color: '#93C5FD', bg: 'rgba(147,197,253,0.08)', border: 'rgba(147,197,253,0.18)' },
-    { label: 'Taux de réponse', value: '0%', color: '#BFDBFE', bg: 'rgba(191,219,254,0.08)', border: 'rgba(191,219,254,0.18)' },
+    { label: 'Leads total', value: '0' },
+    { label: 'Emails envoyés', value: '0' },
+    { label: "Taux d'ouverture", value: '0%' },
+    { label: 'Taux de réponse', value: '0%' },
   ]
 
   const ACTIONS = [
-    { title: 'Scraper des leads', desc: 'Trouver des prospects via IA', href: '/scraper', color: '#3B82F6', bg: 'rgba(59,130,246,0.06)', border: 'rgba(59,130,246,0.15)' },
-    { title: 'Créer une campagne', desc: 'Lancer une séquence email', href: '/campaigns', color: '#60A5FA', bg: 'rgba(96,165,250,0.06)', border: 'rgba(96,165,250,0.15)' },
-    { title: 'Voir le pipeline', desc: 'Gérer vos prospects', href: '/pipeline', color: '#93C5FD', bg: 'rgba(147,197,253,0.06)', border: 'rgba(147,197,253,0.15)' },
+    { title: 'Scraper des leads', desc: 'Trouver des prospects via IA', href: '/scraper' },
+    { title: 'Créer une campagne', desc: 'Lancer une séquence email', href: '/campaigns' },
+    { title: 'Voir le pipeline', desc: 'Gérer vos prospects', href: '/pipeline' },
   ]
 
   return (
-    <main style={{ flex: 1, padding: '36px 40px', overflowY: 'auto' }}>
-      {/* Bannière session expirée */}
+    <main className="flex-1 overflow-y-auto px-10 py-9">
       {expired && (
-        <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 10, padding: '12px 18px', marginBottom: 24, fontSize: 13.5, color: '#FCA5A5' }}>
+        <Banner variant="error" className="mb-6">
           Votre session a expiré. Vous avez été reconnecté automatiquement.
-        </div>
+        </Banner>
       )}
 
-      {/* Bannière succès paiement */}
       {success && (
-        <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 10, padding: '12px 18px', marginBottom: 24, fontSize: 13.5, color: '#86EFAC' }}>
+        <Banner variant="success" className="mb-6">
           Votre abonnement a été activé avec succès ! Bienvenue sur LeadForge Pro.
-        </div>
+        </Banner>
       )}
 
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#F0F4FF', margin: '0 0 6px', letterSpacing: '-0.5px' }}>
+      <div className="mb-9">
+        <h1 className="mb-1.5 font-serif text-[27px] font-medium text-foreground">
           {user?.name ? `Bonjour, ${user.name.split(' ')[0]} !` : 'Tableau de bord'}
         </h1>
-        <p style={{ fontSize: 14, color: '#475569', margin: 0 }}>Bienvenue sur LeadForge — votre espace de prospection B2B</p>
+        <p className="text-[14px] text-muted-foreground">Bienvenue sur LeadForge — votre espace de prospection B2B</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 32 }}>
-        {KPIS.map(kpi => (
-          <div key={kpi.label} style={{ background: kpi.bg, border: `1px solid ${kpi.border}`, borderRadius: 12, padding: 20 }}>
-            <p style={{ fontSize: 11.5, color: '#475569', margin: '0 0 8px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{kpi.label}</p>
-            <p style={{ fontSize: 28, fontWeight: 800, color: kpi.color, margin: 0, letterSpacing: '-1px' }}>{kpi.value}</p>
+      <div className="mb-10 flex border-y border-border">
+        {KPIS.map((kpi, i) => (
+          <div key={kpi.label} className={cn('flex-1 px-6 py-5', i > 0 && 'border-l border-border')}>
+            <p className="mb-1.5 text-[11.5px] font-medium uppercase tracking-wider text-muted-foreground">{kpi.label}</p>
+            <p className="font-serif text-[28px] font-medium text-foreground">{kpi.value}</p>
           </div>
         ))}
       </div>
 
-      <h2 style={{ fontSize: 15, fontWeight: 700, color: '#F0F4FF', marginBottom: 12 }}>Actions rapides</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 32 }}>
-        {ACTIONS.map(a => (
-          <a key={a.title} href={a.href} style={{ background: a.bg, border: `1px solid ${a.border}`, borderRadius: 12, padding: 22, textDecoration: 'none', display: 'block' }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, marginBottom: 14 }} />
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#F0F4FF', margin: '0 0 5px' }}>{a.title}</p>
-            <p style={{ fontSize: 13, color: '#475569', margin: 0 }}>{a.desc}</p>
+      <h2 className="mb-3.5 text-[13px] font-medium uppercase tracking-wider text-muted-foreground">Actions rapides</h2>
+      <div className="mb-9 flex flex-col rounded-lg border border-border">
+        {ACTIONS.map((a, i) => (
+          <a key={a.title} href={a.href} className={cn('flex items-center justify-between px-6 py-4 no-underline', i > 0 && 'border-t border-border')}>
+            <div>
+              <p className="mb-0.5 text-[14px] font-medium text-foreground">{a.title}</p>
+              <p className="text-[13px] text-muted-foreground">{a.desc}</p>
+            </div>
+            <span className="text-[14px] text-primary">→</span>
           </a>
         ))}
       </div>
 
       {user?.plan !== 'PRO' && user?.plan !== 'UNLIMITED' && (
-        <div style={{ background: 'rgba(29,78,216,0.08)', border: '1px solid rgba(37,99,235,0.2)', borderRadius: 12, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="flex items-center justify-between rounded-lg border border-primary/25 bg-primary/[0.05] px-6 py-5">
           <div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#F0F4FF', margin: '0 0 4px' }}>Passez au plan Pro</p>
-            <p style={{ fontSize: 13, color: '#64748B', margin: 0 }}>50 emails/jour, 1 000 leads/mois, A/B testing et AutoPilot inclus.</p>
+            <p className="mb-1 text-[14px] font-medium text-foreground">Passez au plan Pro</p>
+            <p className="text-[13px] text-muted-foreground">50 emails/jour, 1 000 leads/mois, A/B testing et AutoPilot inclus.</p>
           </div>
-          <a href="/onboarding" style={{ background: '#1D4ED8', color: '#fff', fontSize: 13, fontWeight: 700, padding: '9px 20px', borderRadius: 8, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <a href="/onboarding" className="flex-shrink-0 whitespace-nowrap rounded-md bg-foreground px-5 py-2.5 text-[13px] font-medium text-background no-underline">
             Passer au Pro →
           </a>
         </div>
@@ -135,11 +93,8 @@ function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#060D1A', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-      <Sidebar active="/dashboard" />
-      <Suspense fallback={<main style={{ flex: 1, padding: '36px 40px' }}><p style={{ color: '#475569' }}>Chargement...</p></main>}>
-        <DashboardContent />
-      </Suspense>
-    </div>
+    <Suspense fallback={<main className="flex-1 px-10 py-9"><p className="text-muted-foreground">Chargement...</p></main>}>
+      <DashboardContent />
+    </Suspense>
   )
 }

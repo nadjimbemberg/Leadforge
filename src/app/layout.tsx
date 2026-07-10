@@ -1,11 +1,19 @@
 import type { Metadata } from 'next'
-import { DM_Sans } from 'next/font/google'
+import { DM_Sans, Fraunces } from 'next/font/google'
 import './globals.css'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-dm-sans',
   weight: ['400', '500', '600', '700', '800'],
+})
+
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-fraunces',
+  weight: 'variable',
+  style: ['normal', 'italic'],
+  axes: ['opsz', 'SOFT', 'WONK'],
 })
 
 export const metadata: Metadata = {
@@ -20,8 +28,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
-      <body className={`${dmSans.variable} antialiased`} style={{ fontFamily: 'var(--font-dm-sans), DM Sans, system-ui, sans-serif', margin: 0 }}>
+    <html lang="fr" suppressHydrationWarning className={`${dmSans.variable} ${fraunces.variable}`}>
+      <body className="font-sans antialiased">
         {children}
       </body>
     </html>

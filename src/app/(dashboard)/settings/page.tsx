@@ -1,52 +1,25 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { Input } from '@/components/ui/input'
+import { Banner } from '@/components/ui/banner'
+import { cn } from '@/lib/utils'
 
-function Sidebar({ active }: { active: string }) {
-  const router = useRouter()
-  const NAV = [
-    { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Scraper', href: '/scraper' },
-    { label: 'Campagnes', href: '/campaigns' },
-    { label: 'Pipeline', href: '/pipeline' },
-    { label: 'Paramètres', href: '/settings' },
-  ]
-  async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/login')
-  }
-  return (
-    <aside style={{ width: 215, background: '#0B1628', borderRight: '1px solid rgba(96,165,250,0.08)', display: 'flex', flexDirection: 'column', padding: '20px 0', flexShrink: 0 }}>
-      <div style={{ padding: '0 16px 20px', borderBottom: '1px solid rgba(96,165,250,0.08)' }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-          <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="#0F1A2E" />
-            <rect x="7" y="22" width="18" height="3" rx="1.5" fill="#2563EB" />
-            <rect x="10" y="19" width="12" height="3" rx="1" fill="#3B82F6" />
-            <rect x="6" y="9" width="12" height="6" rx="2" fill="#60A5FA" />
-            <rect x="16" y="11" width="10" height="2.5" rx="1.25" fill="#93C5FD" />
-          </svg>
-          <span style={{ fontWeight: 700, fontSize: 15, color: '#F0F4FF' }}>Lead<span style={{ color: '#60A5FA' }}>Forge</span></span>
-        </a>
-      </div>
-      <nav style={{ flex: 1, padding: '14px 10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {NAV.map(item => (
-          <a key={item.href} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 8, fontSize: 13.5, fontWeight: 500, textDecoration: 'none', color: active === item.href ? '#fff' : '#60A5FA', background: active === item.href ? 'rgba(37,99,235,0.18)' : 'transparent' }}>
-            <div style={{ width: 5, height: 5, borderRadius: '50%', background: active === item.href ? '#3B82F6' : '#1D4ED8', flexShrink: 0 }} />
-            {item.label}
-          </a>
-        ))}
-      </nav>
-      <div style={{ padding: '14px 10px', borderTop: '1px solid rgba(96,165,250,0.08)' }}>
-        <button onClick={logout} style={{ width: '100%', background: 'transparent', border: '1px solid rgba(96,165,250,0.1)', borderRadius: 8, padding: '9px 12px', color: '#475569', fontSize: 13, cursor: 'pointer', textAlign: 'left' }}>
-          Déconnexion
-        </button>
-      </div>
-    </aside>
-  )
-}
+const TABS = ['compte', 'smtp', 'plan', 'rgpd']
+
+const SMTP_FIELDS = [
+  { label: 'Hôte SMTP', placeholder: 'smtp.gmail.com' },
+  { label: 'Port', placeholder: '587' },
+  { label: 'Utilisateur', placeholder: 'vous@gmail.com' },
+  { label: 'Mot de passe', placeholder: '••••••••', type: 'password' },
+  { label: "Email d'envoi", placeholder: 'vous@gmail.com' },
+]
+
+const RGPD_ACTIONS = [
+  { label: 'Exporter mes données', desc: 'Téléchargez toutes vos données au format CSV', btn: 'Exporter', destructive: false },
+  { label: 'Supprimer mon compte', desc: 'Suppression définitive et irréversible de votre compte', btn: 'Supprimer', destructive: true },
+]
 
 export default function SettingsPage() {
   useAuth()
@@ -56,9 +29,6 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
   const [saveError, setSaveError] = useState('')
-
-  const TABS = ['compte', 'smtp', 'plan', 'rgpd']
-  const inputStyle = { width: '100%', background: '#0F1A2E', border: '1px solid rgba(96,165,250,0.15)', borderRadius: 9, padding: '10px 14px', color: '#F0F4FF', fontSize: 13.5, outline: 'none', boxSizing: 'border-box' as const }
 
   useEffect(() => {
     fetch('/api/user/settings')
@@ -96,115 +66,109 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#060D1A', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-      <Sidebar active="/settings" />
-      <main style={{ flex: 1, padding: '36px 40px', overflowY: 'auto' }}>
-        <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#F0F4FF', margin: '0 0 6px', letterSpacing: '-0.5px' }}>Paramètres</h1>
-          <p style={{ fontSize: 14, color: '#475569', margin: 0 }}>Gérez votre compte et vos préférences</p>
-        </div>
+    <main className="flex-1 overflow-y-auto px-10 py-9">
+      <div className="mb-8">
+        <h1 className="mb-1.5 font-serif text-[27px] font-medium text-foreground">Paramètres</h1>
+        <p className="text-[14px] text-muted-foreground">Gérez votre compte et vos préférences</p>
+      </div>
 
-        <div style={{ display: 'flex', gap: 4, marginBottom: 28, background: '#0B1628', padding: 4, borderRadius: 10, width: 'fit-content', border: '1px solid rgba(96,165,250,0.08)' }}>
-          {TABS.map(tab => (
-            <button key={tab} onClick={() => setActiveTab(tab)} style={{ background: activeTab === tab ? '#1D4ED8' : 'transparent', border: 'none', borderRadius: 7, padding: '7px 16px', color: activeTab === tab ? '#fff' : '#64748B', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              {tab === 'smtp' ? 'Email SMTP' : tab === 'rgpd' ? 'RGPD' : tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === 'compte' && (
-          <div style={{ background: '#0B1628', border: '1px solid rgba(96,165,250,0.08)', borderRadius: 14, padding: 28, maxWidth: 560 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#F0F4FF', marginBottom: 20 }}>Informations du compte</h2>
-            <form onSubmit={handleSaveAccount} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div>
-                <label style={{ fontSize: 13, color: '#94A3B8', display: 'block', marginBottom: 6, fontWeight: 500 }}>Nom complet</label>
-                <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Jean Dupont" style={inputStyle}
-                  onFocus={e => e.target.style.borderColor = 'rgba(96,165,250,0.5)'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(96,165,250,0.15)'} />
-              </div>
-              <div>
-                <label style={{ fontSize: 13, color: '#94A3B8', display: 'block', marginBottom: 6, fontWeight: 500 }}>Email</label>
-                <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="vous@exemple.com" style={inputStyle}
-                  onFocus={e => e.target.style.borderColor = 'rgba(96,165,250,0.5)'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(96,165,250,0.15)'} />
-              </div>
-
-              {saveMsg && <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#86EFAC' }}>{saveMsg}</div>}
-              {saveError && <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#FCA5A5' }}>{saveError}</div>}
-
-              <button type="submit" disabled={saving} style={{ background: '#2563EB', border: 'none', borderRadius: 9, padding: '10px 20px', color: '#fff', fontSize: 14, fontWeight: 700, cursor: saving ? 'not-allowed' : 'pointer', width: 'fit-content', opacity: saving ? 0.8 : 1 }}>
-                {saving ? 'Sauvegarde...' : 'Sauvegarder'}
-              </button>
-            </form>
-          </div>
-        )}
-
-        {activeTab === 'smtp' && (
-          <div style={{ background: '#0B1628', border: '1px solid rgba(96,165,250,0.08)', borderRadius: 14, padding: 28, maxWidth: 560 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#F0F4FF', marginBottom: 8 }}>Configuration SMTP</h2>
-            <p style={{ fontSize: 13.5, color: '#475569', marginBottom: 20 }}>Connectez votre email pour envoyer les campagnes depuis votre adresse</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {[
-                { label: 'Hôte SMTP', placeholder: 'smtp.gmail.com' },
-                { label: 'Port', placeholder: '587' },
-                { label: 'Utilisateur', placeholder: 'vous@gmail.com' },
-                { label: 'Mot de passe', placeholder: '••••••••', type: 'password' },
-                { label: "Email d'envoi", placeholder: 'vous@gmail.com' },
-              ].map(f => (
-                <div key={f.label}>
-                  <label style={{ fontSize: 13, color: '#94A3B8', display: 'block', marginBottom: 6, fontWeight: 500 }}>{f.label}</label>
-                  <input type={f.type ?? 'text'} placeholder={f.placeholder} style={inputStyle}
-                    onFocus={e => e.target.style.borderColor = 'rgba(96,165,250,0.5)'}
-                    onBlur={e => e.target.style.borderColor = 'rgba(96,165,250,0.15)'} />
-                </div>
-              ))}
-              <button style={{ background: '#2563EB', border: 'none', borderRadius: 9, padding: '10px 20px', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', width: 'fit-content', marginTop: 4 }}>
-                Enregistrer et tester
-              </button>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'plan' && (
-          <div style={{ background: '#0B1628', border: '1px solid rgba(96,165,250,0.08)', borderRadius: 14, padding: 28, maxWidth: 560 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#F0F4FF', marginBottom: 20 }}>Plan actuel</h2>
-            <div style={{ background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.2)', borderRadius: 10, padding: '16px 20px', marginBottom: 20 }}>
-              <p style={{ fontSize: 11, color: '#64748B', margin: '0 0 4px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Plan actuel</p>
-              <p style={{ fontSize: 22, fontWeight: 800, color: '#F0F4FF', margin: '0 0 4px', letterSpacing: '-0.5px' }}>{user?.plan ?? 'Starter'}</p>
-              <p style={{ fontSize: 13, color: '#475569', margin: 0 }}>
-                {user?.plan === 'PRO' ? '50 emails/jour · 1 000 leads/mois · 15 campagnes' : '10 emails/jour · 100 leads/mois · 3 campagnes'}
-              </p>
-            </div>
-            {user?.plan !== 'PRO' && (
-              <a href="/onboarding" style={{ display: 'inline-block', background: '#1D4ED8', color: '#fff', fontSize: 14, fontWeight: 700, padding: '10px 20px', borderRadius: 9, textDecoration: 'none' }}>
-                Passer au Pro →
-              </a>
+      <div className="mb-7 flex w-fit gap-1 border-b border-border">
+        {TABS.map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={cn(
+              'border-b-2 px-4 py-2.5 text-[13px] font-medium',
+              activeTab === tab ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground'
             )}
-          </div>
-        )}
+          >
+            {tab === 'smtp' ? 'Email SMTP' : tab === 'rgpd' ? 'RGPD' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
+      </div>
 
-        {activeTab === 'rgpd' && (
-          <div style={{ background: '#0B1628', border: '1px solid rgba(96,165,250,0.08)', borderRadius: 14, padding: 28, maxWidth: 560 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: '#F0F4FF', marginBottom: 20 }}>Données personnelles</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {[
-                { label: 'Exporter mes données', desc: 'Téléchargez toutes vos données au format CSV', btn: 'Exporter', color: '#2563EB' },
-                { label: 'Supprimer mon compte', desc: 'Suppression définitive et irréversible de votre compte', btn: 'Supprimer', color: '#EF4444' },
-              ].map(a => (
-                <div key={a.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid rgba(96,165,250,0.06)' }}>
-                  <div>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: '#F0F4FF', margin: '0 0 3px' }}>{a.label}</p>
-                    <p style={{ fontSize: 12.5, color: '#475569', margin: 0 }}>{a.desc}</p>
-                  </div>
-                  <button style={{ background: 'transparent', border: `1px solid ${a.color}`, borderRadius: 8, padding: '7px 16px', color: a.color, fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0, marginLeft: 16 }}>
-                    {a.btn}
-                  </button>
-                </div>
-              ))}
+      {activeTab === 'compte' && (
+        <div className="max-w-[560px] rounded-lg border border-border bg-card p-7">
+          <h2 className="mb-5 font-serif text-[17px] font-medium text-foreground">Informations du compte</h2>
+          <form onSubmit={handleSaveAccount} className="flex flex-col gap-4">
+            <div>
+              <label className="mb-1.5 block text-[13px] font-medium text-subtle">Nom complet</label>
+              <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Jean Dupont" />
             </div>
+            <div>
+              <label className="mb-1.5 block text-[13px] font-medium text-subtle">Email</label>
+              <Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="vous@exemple.com" />
+            </div>
+
+            {saveMsg && <Banner variant="success">{saveMsg}</Banner>}
+            {saveError && <Banner variant="error">{saveError}</Banner>}
+
+            <button type="submit" disabled={saving} className="w-fit rounded-md bg-foreground px-5 py-2.5 text-[14px] font-medium text-background disabled:cursor-not-allowed disabled:opacity-70">
+              {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {activeTab === 'smtp' && (
+        <div className="max-w-[560px] rounded-lg border border-border bg-card p-7">
+          <h2 className="mb-1.5 font-serif text-[17px] font-medium text-foreground">Configuration SMTP</h2>
+          <p className="mb-5 text-[13.5px] text-muted-foreground">Connectez votre email pour envoyer les campagnes depuis votre adresse</p>
+          <div className="flex flex-col gap-3.5">
+            {SMTP_FIELDS.map(f => (
+              <div key={f.label}>
+                <label className="mb-1.5 block text-[13px] font-medium text-subtle">{f.label}</label>
+                <Input type={f.type ?? 'text'} placeholder={f.placeholder} />
+              </div>
+            ))}
+            <button className="mt-1 w-fit rounded-md bg-foreground px-5 py-2.5 text-[14px] font-medium text-background">
+              Enregistrer et tester
+            </button>
           </div>
-        )}
-      </main>
-    </div>
+        </div>
+      )}
+
+      {activeTab === 'plan' && (
+        <div className="max-w-[560px] rounded-lg border border-border bg-card p-7">
+          <h2 className="mb-5 font-serif text-[17px] font-medium text-foreground">Plan actuel</h2>
+          <div className="mb-5 rounded-md border border-primary/20 bg-primary/[0.06] px-5 py-4">
+            <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Plan actuel</p>
+            <p className="mb-1 font-serif text-[22px] font-medium text-foreground">{user?.plan ?? 'Starter'}</p>
+            <p className="text-[13px] text-muted-foreground">
+              {user?.plan === 'PRO' ? '50 emails/jour · 1 000 leads/mois · 15 campagnes' : '10 emails/jour · 100 leads/mois · 3 campagnes'}
+            </p>
+          </div>
+          {user?.plan !== 'PRO' && (
+            <a href="/onboarding" className="inline-block rounded-md bg-foreground px-5 py-2.5 text-[14px] font-medium text-background no-underline">
+              Passer au Pro →
+            </a>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'rgpd' && (
+        <div className="max-w-[560px] rounded-lg border border-border bg-card p-7">
+          <h2 className="mb-5 font-serif text-[17px] font-medium text-foreground">Données personnelles</h2>
+          <div className="flex flex-col">
+            {RGPD_ACTIONS.map((a, i) => (
+              <div key={a.label} className={cn('flex items-center justify-between py-4', i > 0 && 'border-t border-border')}>
+                <div>
+                  <p className="mb-0.5 text-[14px] font-medium text-foreground">{a.label}</p>
+                  <p className="text-[12.5px] text-muted-foreground">{a.desc}</p>
+                </div>
+                <button
+                  className={cn(
+                    'ml-4 flex-shrink-0 rounded-md border px-4 py-1.5 text-[13px] font-medium',
+                    a.destructive ? 'border-destructive/40 text-destructive' : 'border-border text-foreground'
+                  )}
+                >
+                  {a.btn}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </main>
   )
 }
